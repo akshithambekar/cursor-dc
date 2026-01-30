@@ -107,7 +107,7 @@ export async function createOpenCodeSession(
   const session = await sandbox.process.createSession(sessionId);
 
   const openCodeServe = await sandbox.process.executeSessionCommand(sessionId, {
-    command: `opencode serve --port 3001`,
+    command: `opencode serve --port 3001 "/home/daytona/workspace/repo"`,
     runAsync: true,
   });
   

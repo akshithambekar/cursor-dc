@@ -1,5 +1,9 @@
 import { Hono } from "hono";
 import { Webhooks } from "@octokit/webhooks";
+import { createAppAuth } from "@octokit/auth-app";
+import {Octokit} from "octokit"
+import { createReviewComment } from "./lib/github.js";
+import { createOpenCodeSession } from "./lib/daytona.js";
 
 const app = new Hono();
 
@@ -9,16 +13,7 @@ const webhooks = new Webhooks({
   secret: webhookSecret,
 });
 
-app.get("/", (c) => {
-  return c.text("Hello Hono!");
-});
 
-app.get("/api/hello", (c) => {
-  return c.json({
-    ok: true,
-    message: "Hello Hono!",
-  });
-});
 
 app.post("/api/webhooks", async (c) => {
   const event = c.req.header("x-github-event");
@@ -56,21 +51,40 @@ app.post("/api/webhooks", async (c) => {
     console.log(`Pull request #${prNumber}: ${title} (${action}) by ${author}`);
 
     switch (action) {
-      case "opened":
-        console.log(`New pull request #${prNumber} opened by ${author}`);
-        break;
-      case "closed":
-        const merged = payload.pull_request?.merged;
-        console.log(`Pull request #${prNumber} closed (merged: ${merged})`);
-        break;
+      // case "opened":
+      //   const user = payload.pull_request?.head?.repo?.owner?.login
+      //   const repo = payload.pull_request?.head?.repo?.name
+
+      //   await createReviewComment(c, user, repo, prNumber, "Generating preview...");
+
+      //   const {previewUrl} = await createOpenCodeSession({
+      //     "repoUrl": `https://github.com/${user}/${repo}.git`,
+      //     "branch": payload.pull_request?.head?.ref,
+      //     "name": `pr-${prNumber}`,
+      //     "public": true,
+      //     "autoStopInterval": 30,
+      //   })
+
+      //   await createReviewComment(c, user, repo, prNumber, "Preview generated successfully!: " + previewUrl);
+
+      //   break;
       case "reopened":
-        console.log(`Pull request #${prNumber} reopened`);
+        const user = payload.pull_request?.head?.repo?.owner?.login
+        const repo = payload.pull_request?.head?.repo?.name
+
+        await createReviewComment(c, user, repo, prNumber, "Generating preview...");
+
+        const {previewUrl} = await createOpenCodeSession({
+          "repoUrl": `https://github.com/${user}/${repo}.git`,
+          "branch": payload.pull_request?.head?.ref,
+          "name": `pr-${prNumber}`,
+          "public": true,
+          "autoStopInterval": 30,
+        })
+
+        await createReviewComment(c, user, repo, prNumber, "Preview generated successfully!: " + previewUrl);
+
         break;
-      case "synchronize":
-        console.log(`Pull request #${prNumber} updated with new commits`);
-        break;
-      default:
-        console.log(`Pull request #${prNumber} action: ${action}`);
     }
   }
 
