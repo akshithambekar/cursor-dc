@@ -8,9 +8,12 @@
     "build": "bun build src/index.ts --outdir=dist --target=bun",
     "start": "bun run dist/index.js",
     "lint": "eslint --max-warnings 0",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "bun run test/run.ts",
+    "test:destroy": "bun run test/run.ts --destroy"
   },
   "dependencies": {
+    "@daytonaio/sdk": "^0.138.0",
     "hono": "^4.6.0"
   },
   "devDependencies": {
