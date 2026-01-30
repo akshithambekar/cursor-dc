@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@daytonaio/sdk": "^0.138.0",
+    "@octokit/webhooks": "^14.2.0",
     "hono": "^4.6.0"
   },
   "devDependencies": {
