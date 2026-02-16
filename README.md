@@ -12,7 +12,7 @@ When a PR is opened:
 6. The preview updates instantly via HMR.
 7. The new commit appears on the PR, all without leaving the browser.
 
-> Built in a 5-hour sprint at Cursor’s DC Hackathon.
+> Built in a 5-hour sprint at Cursor’s DC Hackathon. View the Devpost [here](https://devpost.com/software/prism-3g7c6b).
 
 ---
 
