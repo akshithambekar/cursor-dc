@@ -1,135 +1,86 @@
-# Turborepo starter
+## Prism
 
-This Turborepo starter is maintained by the Turborepo core team.
+**Prism** is a GitHub App that automatically spins up live preview environments for pull requests using Daytona sandboxes.
 
-## Using this example
+When a PR is opened:
 
-Run the following command:
+1. A sandbox is created with the PR branch.
+2. A preview URL is posted as a PR comment.
+3. Reviewers get a live app with React-Grab enabled.
+4. They click any element, describe a change (e.g., "make this button blue"), and hit **Apply**.
+5. OpenCode edits the source, commits to the PR branch, and pushes.
+6. The preview updates instantly via HMR.
+7. The new commit appears on the PR, all without leaving the browser.
 
-```sh
-npx create-turbo@latest
-```
+> Built in a 5-hour sprint at Cursor’s DC Hackathon.
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## Architecture & Features
 
-### Apps and Packages
+### GitHub App (Probot + Octokit)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- Listens for:
+  - `pull_request.opened`
+  - `pull_request.synchronize`
+- Calls the Daytona API to create a workspace
+- Posts the preview URL as a PR comment
+- Stores workspace ID per PR for cleanup on close/merge
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+---
 
-### Utilities
+### Daytona Sandbox
 
-This Turborepo has some additional tools already setup for you:
+Workspace configuration:
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- Clones the PR branch
+- Runs `npm install`
+- Starts the dev server
+- Exposes:
+  - **Port 3000** → App preview
+  - **Port 4000** → API bridge
+- Runs OpenCode inside the sandbox
 
-### Build
+---
 
-To build all apps and packages, run the following command:
+### React-Grab (DEV-only)
 
-```
-cd my-turborepo
+Integrated into the Next.js app in development mode:
 
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
+- Floating panel UI
+- Displays:
+  - Selected element
+  - Source file + line number
+  - Change input field
+- **Apply** sends the edit request to the OpenCode bridge
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
+---
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### OpenCode Bridge (`/api/opencode`, DEV-only)
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+Next.js API route that:
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+1. Receives:
 
-### Develop
+   ```json
+   { "file": "...", "line": 42, "change": "..." }
+   ```
 
-To develop all apps and packages, run the following command:
+2. Calls the OpenCode TypeScript SDK to edit the file  
+3. Stages and commits with:
 
-```
-cd my-turborepo
+   ```
+   [PR Preview] {description}
+   ```
 
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+4. Pushes to the PR branch  
+5. Returns success + commit SHA to the UI  
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+---
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## End Result
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- Live preview environments per PR  
+- In-browser UI-driven code edits  
+- Automatic commits to the PR branch  
+- Real-time feedback via HMR  
