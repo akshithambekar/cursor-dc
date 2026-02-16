@@ -1,5 +1,5 @@
 ## Prism
-> Built in a 5-hour sprint at Cursor’s DC Hackathon, selected as a finalist. View the Devpost [here](https://devpost.com/software/prism-3g7c6b).
+> Built in 5 hours and selected as a finalist at Cursor’s DC Hackathon. View the Devpost [here](https://devpost.com/software/prism-3g7c6b).
 
 **Prism** is a GitHub App that automatically spins up live preview environments for pull requests using Daytona sandboxes.
 
