@@ -1,4 +1,5 @@
 ## Prism
+> Built in a 5-hour sprint at Cursor’s DC Hackathon, selected as a finalist. View the Devpost [here](https://devpost.com/software/prism-3g7c6b).
 
 **Prism** is a GitHub App that automatically spins up live preview environments for pull requests using Daytona sandboxes.
 
@@ -11,8 +12,6 @@ When a PR is opened:
 5. OpenCode edits the source, commits to the PR branch, and pushes.
 6. The preview updates instantly via HMR.
 7. The new commit appears on the PR, all without leaving the browser.
-
-> Built in a 5-hour sprint at Cursor’s DC Hackathon. View the Devpost [here](https://devpost.com/software/prism-3g7c6b).
 
 ---
 
